@@ -1,4 +1,3 @@
-
 title: Mastering SQL Window Functions
 email: chauhanjugal4@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
@@ -9,4 +8,15 @@ description: >- # this means to ignore newlines until "baseurl:"
 # Build settings
 markdown: kramdown
 
-theme: jekyll-theme-minima
+theme: minima
+skin: solarized-light
+
+social_links:
+  
+ - { platform: github,         user_url: "https://github.com/jugal-chauhan04" }
+ 
+ - { platform: linkedin,       user_url: "https://www.linkedin.com/in/jugal-chauhan-648828167/" }
+
+ - { platform: datascienceportfolio,              user_url: "https://www.datascienceportfol.io/jugalchauhan" }
+ 
+ - { platform: stratascratch,        user_url: "https://platform.stratascratch.com/user/joogle" }

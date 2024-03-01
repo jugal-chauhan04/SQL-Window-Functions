@@ -182,6 +182,69 @@ WHERE lowest_salary = 1 OR highest_salary = 1;
 
 This showcases how window functions can be applied to extract meanigful insights. Let's work one last example!  
 
-## 4. 
+## 4. Top 5 States With 5 Star Businesses - Yelp  
+
+As we saw in previous example, in some cases ranking is not required in the final result, but is used to find another information. Let's understand the problem statement.  
+
+> Find the top 5 states with the most 5 star businesses. Output the state name along with the number of 5-star businesses and order records by the number of 5-star businesses in descending order. In case there are ties in the number of businesses, return all the unique states. If two states have the same result, sort them in alphabetical order.
+
+yelp_business
+| Column | Type |
+| ------ |:----:|
+| business_id | varchar |
+| name | varchar |
+| neighborhood | varchar |
+| address | varchar |
+| city | varchar |
+| state | varchar |
+| postal_code | varchar |
+| latitude | float |
+| longitude | float |
+| stars | float |
+| review_count | int |
+| is_open | int |
+| categories | varchar |
+
+Break it down:  
+1. Filter 5 states based on number of 5 star businesses in desc order.
+2. Output columns need name of state and number of 5 star businesses.
+3. We need to return all the states in case of ties meaning output rows are not limited to just 5 (Cannot use LIMIT statement).
+4. Use alphabetical asc order for tiebreaker.
+
+Plan:
+1. COUNT number of states that have 5 stars
+2. Assign rank on basis of states having most 5 stars businesses in desc order.
+3. USE CTE for steps 1 and 2.
+4. From the CTE output select only the rows where rank <= 5. This will ensure all the states that have equal number of 5 star businesses will be included
+5. Order by number of businesses desc and by state alphabetically asc.
+
+Here, The key is to use RANK() instead of DENSE_RANK() as we need to find top 5 states. RANK() will skip rankings which make sure we only include top 5 states.
+
+PostgreSQL Solution:  
+
+```sql
+WITH cte1 AS
+(
+select state, business, RANK() OVER (ORDER BY business DESC) AS new
+from
+(select state, count(state) as business
+from yelp_business
+where stars = 5
+group by state) as a1
+)
+
+SELECT cte1.state, cte1.business
+from cte1
+WHERE new <=5
+ORDER BY cte1.business desc, cte1.state asc;
+```
+
+Window functions are powerful tools that can be used to not only produce ranked results but also to produce meaningful insights if used with their full potential. The examples here demonstrate just that.  
+
+## Credits  
+
+All the credits for the interview questions and table schema goes to [Stratascratch](https://www.stratascratch.com/) which is a wonderful platform to practice coding skills.
+
+
 
 

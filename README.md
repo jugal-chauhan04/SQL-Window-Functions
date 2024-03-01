@@ -49,21 +49,139 @@ Now, let's break down the problem into sub-problems for better understanding
 4. Sort by alphabetical for tie breaker
    * rank needs to be **unique**
 
-Here, we understand that we need to create two new columns in output - one is the aggregate function (either count or sum) and the other that assigns a rank. By this detail it is clear as a day that we need to use window function, but which one? We see that we need to obtain a unique rank, ROW_NUMBER() is the function that assigns a unique value to the partition, hence we will use that. The PostgreSQL solution is given below.  
+Here, we understand that we need to create two new columns in output - one is the aggregate function (either count or sum) and the other that assigns a rank. By this detail it is clear as a day that we need to use window function, but which one? We see that we need to obtain a unique rank, ROW_NUMBER() is the function that assigns a unique value to the partition, hence we will use that. The overall query will constructed using following plan:  
+
+1. Find the count of total emails sent.
+2. Use ROW_NUMBER() to assign a rank based on the count, sorted in descending order to prioritize users who sent the most emails.
+3. Implement another sorting based on ascending alphabetical order of usernames as a tiebreaker.
+4. Finally, group the users by their usernames to obtain the total count and rank of each user's sent emails
+
+The PostgreSQL solution is given below.  
 
 ```sql
 SELECT
    from_user, 
-   COUNT(from_user) AS total_email,
-   ROW_NUMBER() OVER(ORDER BY COUNT(from_user) desc, from_user asc) as activity_rank
+   COUNT(from_user) AS total_email,  
+   ROW_NUMBER() OVER(ORDER BY COUNT(from_user) desc, from_user asc) as activity_rank  
 FROM 
    google_gmail_emails
 GROUP BY 
-   from_user;
+   from_user; 
+``` 
+This will produce the desired result, hence giving a basic demonstration of ROW_NUMBER() window function. Now let's explore more window functions.  
+
+## 2. Most Active Guests - Airbnb  
+
+Now let's see an example of how to differentiate between RANK() and DENSE_RANK() functions. The problem statement and table schema is given below.  
+
+> Rank guests based on the total number of messages they've exchanged with any of the hosts. Guests with the same number of messages as other guests should have the same rank. Do not skip rankings if the preceding rankings are identical.
+Output the rank, guest id, and number of total messages they've sent. Order by the highest number of total messages first.
+
+**airbnb_contacts**
+
+| Column | Type |
+| ------ |:----:|
+| id_guest | varchar |
+| id_host | varchar |
+| id_listing | varchar |
+| ts_contact_at | datetime |
+| ts_reply_at | datetime |
+| ts_accepted_at | datetime |
+| ts_booking_at | datetime |
+| ds_checkin | datetime |
+| ds_checkout | datetime |
+| n_guests | int |
+| n_messages | int |  
+
+Again, break down the problem into smaller parts:  
+1. Use an aggregate function to find total number of messages exchanged and provide rank based on that.
+2. Same total = Same rank.
+3. Do not skip ranks.
+4. Output columns - rank, guest_id, total messages
+5. Sort in desc order of total messages.
+
+Similarly, build a query plan based on this. The important details that helps us recognize which window function to use are points 2 and 3. The RANK() functions assigns the same rank for same values, but skips rank. The DENSE_RANK() function, instead, does the same thing as RANK() except it does not leave gaps in ranking. Hence we understand that we have to use DENSE_RANK() function here.  
+
+Query Plan:  
+1. Use DENSE_RANK() over sum of messages sent and sort in desc.
+2. use SUM() to find total messages
+3. Group by guest_id
+ 
+PostgreSQL Query:  
+
+```sql
+SELECT 
+    DENSE_RANK() OVER(ORDER BY sum(n_messages) DESC) as ranking, 
+    id_guest, 
+    sum(n_messages) as sum_n_messages
+FROM airbnb_contacts
+GROUP BY id_guest;
 ```
 
-This will produce the desired result, hence giving a basic demonstration of ROW_NUMBER() window function. Now let's try to solve a bit trickier questions.  
+Now let's get into more complicated stuff.  
 
-## 2. 
+## 3. Workers With The Highest And Lowest Salaries - Amazon  
+
+A lot of practical problems do not start with "Rank the users...." and generally, by understanding the requirement, we have to deduce when to apply window functions. As it happens, some times we can utilie window functions to extract insights that are not directly related to assigning ranks. Let's explore this problem statement to understand what I am talking about.  
+
+> You have been asked to find the employees with the highest and lowest salary. Your output should include the employee's ID, salary, and department, as well as a column salary_type that categorizes the output by: 'Highest Salary' represents the highest salary and 'Lowest Salary' represents the lowest salary.
+
+**Table: worker**
+
+| Column | Type |
+| ------ |:----:|
+| worker_id | int |
+| first_name | varchar |
+| last_name | varchar |
+| salary | int |
+| joining_date | datetime |
+| department | varchar |  
+
+**Table: title**  
+
+| Column | Type |
+| ------ |:----:|
+| worker_ref_id | int |
+| worker_title | varchar |
+| affected_from | datetime |  
+
+Let's break down the requirements:
+1. In the output we need worker_id, salary, and department - all of which are in worker table.
+2. We also need a new column 'salary type' in output that has two values: highest salary and lowest salary.
+
+Query Plan:
+1. Create two rank columns, one in desc order where rank=1 is highest salary, and other in asc order where rank=1 as lowest salary.
+2. Assign a CTE for steps 1.
+3. Select the required columns from CTE output and create 'salary_type' column using CASE statement.
+4. Filter the highest and lowest salaries only using WHERE clause to select only rank=1 values.
+
+PostgreSQL Query:  
+
+```sql
+WITH cte1 AS
+(
+SELECT 
+    *, 
+    RANK() OVER(ORDER BY salary desc) AS highest_salary,
+    RANK() OVER(ORDER BY salary asc) AS lowest_salary
+FROM
+    worker
+)
+
+SELECT
+    worker_id,
+    salary,
+    department,
+    CASE
+        WHEN highest_salary = 1 THEN 'Highest Salary'
+        ELSE 'Lowest Salary'
+    END AS salary_type
+FROM cte1
+WHERE lowest_salary = 1 OR highest_salary = 1;
+```
+
+This showcases how window functions can be applied to extract meanigful insights. Let's work one last example!  
+
+## 4. 
 
 

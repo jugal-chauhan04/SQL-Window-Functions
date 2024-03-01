@@ -18,7 +18,7 @@ These functions enhance the analytical capabilities of SQL queries, enabling mor
 
 ## Real World Applications  
 
-We are going to use real world application of window functions, for that will we solve four interview questions for companies like Forbes, Google, Airbnb, and Uber which will showcase how and in what scenario window functions are utilized.  
+We are going to use real world application of window functions, for that will we solve four interview questions for companies like Google, Airbnb, Amazon, and Yelp which will showcase how and in what scenario window functions are utilized.  
 
 ## 1. Email Activity Rank - Google.  
 

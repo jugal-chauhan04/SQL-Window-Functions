@@ -6,7 +6,7 @@ description: >- # this means to ignore newlines until "baseurl:"
 # Build settings
 markdown: kramdown
 
-theme: jekyll-theme-tactile
+theme: jekyll-theme-dinky
 
 social_links:
   

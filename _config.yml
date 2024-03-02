@@ -3,13 +3,10 @@ email: chauhanjugal4@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   Discovering the potential of SQL window functions to generate meaningful insights
 
-#github_username:  patdryburgh
-
 # Build settings
 markdown: kramdown
 
-theme: jekyll-theme-minimal
-skin: solarized-light
+theme: jekyll-theme-tactile
 
 social_links:
   
@@ -17,6 +14,6 @@ social_links:
  
  - { platform: linkedin,       user_url: "https://www.linkedin.com/in/jugal-chauhan-648828167/" }
 
- - { platform: datascienceportfolio,              user_url: "https://www.datascienceportfol.io/jugalchauhan" }
+ - { platform: datascienceportfolio,        user_url: "https://www.datascienceportfol.io/jugalchauhan" }
  
  - { platform: stratascratch,        user_url: "https://platform.stratascratch.com/user/joogle" }
